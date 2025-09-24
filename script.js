@@ -732,15 +732,15 @@ class CheckoutManager {
         const deliveryCost = this.deliveryType === 'delivery' ? STORE_CONFIG.DELIVERY_COST : 0;
         const total = subtotal + deliveryCost;
 
-        let message = `🛒 *NUEVO PEDIDO - ${STORE_CONFIG.STORE_NAME}*\n\n`;
+        let message = ` *NUEVO PEDIDO - ${STORE_CONFIG.STORE_NAME}*\n\n`;
 
         // Comentario: Datos del cliente
-        message += `👤 *Cliente:*\n`;
+        message += ` *Cliente:*\n`;
         message += `Nombre: ${this.customerData.name}\n`;
         message += `Teléfono: ${this.customerData.phone}\n`;
 
         // Comentario: Tipo de entrega
-        message += `\n📦 *Entrega:*\n`;
+        message += `\n *Entrega:*\n`;
         if (this.deliveryType === 'pickup') {
             message += `Recoger en local\n`;
         } else {
@@ -749,7 +749,7 @@ class CheckoutManager {
         }
 
         // Comentario: Items del pedido
-        message += `\n🛍️ *Productos:*\n`;
+        message += `\n *Productos:*\n`;
         cartManager.cart.forEach((item, index) => {
             message += `${index + 1}. ${item.product.NombreProducto}\n`;
             message += `   Cantidad: ${item.quantity}\n`;
@@ -758,7 +758,7 @@ class CheckoutManager {
         });
 
         // Comentario: Totales
-        message += `💰 *Resumen:*\n`;
+        message += ` *Resumen:*\n`;
         message += `Subtotal: $${subtotal.toLocaleString()}\n`;
         if (deliveryCost > 0) {
             message += `Domicilio: $${deliveryCost.toLocaleString()}\n`;
@@ -767,10 +767,10 @@ class CheckoutManager {
 
         // Comentario: Notas adicionales
         if (this.customerData.notes) {
-            message += `\n📝 *Notas:*\n${this.customerData.notes}\n`;
+            message += `\n *Notas:*\n${this.customerData.notes}\n`;
         }
 
-        message += `\n⏰ Pedido realizado: ${new Date().toLocaleString()}\n`;
+        message += `\n Pedido realizado: ${new Date().toLocaleString()}\n`;
 
         return message;
     }
