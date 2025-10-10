@@ -109,7 +109,7 @@ function goToMenu() {
 
     // Comentario: Navegar después de la animación
     setTimeout(() => {
-        window.location.href = 'menu.html';
+        window.location.href = 'categoria.html';
     }, 300);
 }
 

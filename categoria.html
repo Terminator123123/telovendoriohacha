@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo - TE LO VENDO RIOHACHA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="categoria-styles.css">
+</head>
+<body>
+    <div class="menu-container">
+        <!-- Header del catálogo -->
+        <header class="menu-header">
+            <div class="header-top">
+                <!-- Botón regresar (móvil: izquierda) -->
+                <button class="back-btn" onclick="goHome()" aria-label="Volver al inicio">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+
+                <!-- Información de la tienda (centro) -->
+                <div class="store-info">
+                    <h1 class="store-title">TE LO VENDO RIOHACHA</h1>
+                    <div class="store-status-menu">
+                        <span class="status-indicator" id="status-indicator-menu"></span>
+                        <span class="status-text" id="store-status-menu">Abierto</span>
+                    </div>
+                    <!-- Logo (visible solo en móvil, debajo del nombre) -->
+                    <div class="logo-mobile">
+                        <img src="https://i.ibb.co/bgFd8Hgm/LOGO.png" alt="TE LO VENDO RIOHACHA" class="logo-img-mobile">
+                    </div>
+                </div>
+
+                <!-- Logo central (visible solo en desktop) -->
+                <div class="logo-center">
+                    <img src="https://i.ibb.co/bgFd8Hgm/LOGO.png" alt="TE LO VENDO RIOHACHA" class="logo-img-desktop">
+                </div>
+            </div>
+        </header>
+
+        <!-- Barra de búsqueda -->
+        <div class="search-section">
+            <div class="search-container">
+                <input type="text"
+                       class="search-input"
+                       id="searchInput"
+                       placeholder="Buscar productos..."
+                       autocomplete="off">
+                <button class="search-btn" onclick="performSearch()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtros de categorías -->
+        <div class="categories-section">
+            <div class="categories-container">
+                <button class="category-filter active" data-category="all" onclick="filterByCategory('all')">
+                    Todos
+                </button>
+                <button class="category-filter" data-category="Audio y Tecnología" onclick="filterByCategory('Audio y Tecnología')">
+                    🎧 Audio y Tecnología
+                </button>
+                <button class="category-filter" data-category="Salud y Suplementos" onclick="filterByCategory('Salud y Suplementos')">
+                    💪 Salud y Suplementos
+                </button>
+                <button class="category-filter" data-category="Hogar y Cocina" onclick="filterByCategory('Hogar y Cocina')">
+                    🏠 Hogar y Cocina
+                </button>
+                <button class="category-filter" data-category="Belleza y Cuidado Personal" onclick="filterByCategory('Belleza y Cuidado Personal')">
+                    ✨ Belleza y Cuidado
+                </button>
+                <button class="category-filter" data-category="Gaming y Entretenimiento" onclick="filterByCategory('Gaming y Entretenimiento')">
+                    🎮 Gaming
+                </button>
+                <button class="category-filter" data-category="Deportes y Fitness" onclick="filterByCategory('Deportes y Fitness')">
+                    🏋️‍♂️ Deportes
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido principal del catálogo -->
+        <main class="catalog-content">
+            <!-- Estado de carga -->
+            <div class="loading-state" id="loadingState">
+                <div class="loading-spinner"></div>
+                <p>Cargando productos...</p>
+            </div>
+
+            <!-- Estado vacío -->
+            <div class="empty-state hidden" id="emptyState">
+                <div class="empty-icon">📦</div>
+                <h3>No se encontraron productos</h3>
+                <p>Intenta con otros términos de búsqueda o categoría</p>
+                <button class="btn-secondary" onclick="clearSearch()">Ver todos los productos</button>
+            </div>
+
+            <!-- Grid de productos -->
+            <div class="products-grid hidden" id="productsGrid">
+                <!-- Los productos se cargarán dinámicamente aquí -->
+            </div>
+        </main>
+
+        <!-- WhatsApp flotante -->
+        <button class="whatsapp-float" onclick="openWhatsApp()" aria-label="Contactar por WhatsApp">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.525 3.488" fill="currentColor"/>
+            </svg>
+        </button>
+
+        <!-- Carrito flotante -->
+        <div class="cart-float hidden" id="cartFloat">
+            <div class="cart-info">
+                <div class="cart-count" id="cartCount">0 productos</div>
+                <div class="cart-total" id="cartTotal">$0</div>
+            </div>
+            <button class="cart-btn" onclick="startCheckout()">
+                Ver Carrito
+            </button>
+        </div>
+
+        <!-- Modal de checkout -->
+        <div class="checkout-modal hidden" id="checkoutModal">
+            <div class="modal-overlay" onclick="closeCheckout()"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Confirmar Pedido</h2>
+                    <button class="modal-close" onclick="closeCheckout()">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Resumen del pedido -->
+                <div class="order-summary">
+                    <h3>Resumen del Pedido</h3>
+                    <div class="order-items" id="orderItems">
+                        <!-- Los items se cargarán dinámicamente -->
+                    </div>
+                    <div class="order-total">
+                        <div class="subtotal">
+                            <span>Subtotal:</span>
+                            <span id="subtotalAmount">$0</span>
+                        </div>
+                        <div class="delivery-cost hidden" id="deliveryCostRow">
+                            <span>Domicilio:</span>
+                            <span id="deliveryAmount">$5,000</span>
+                        </div>
+                        <div class="total">
+                            <span>Total:</span>
+                            <span id="totalAmount">$0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opciones de entrega -->
+                <div class="delivery-section">
+                    <h3>Tipo de Entrega</h3>
+                    <div class="delivery-options">
+                        <label class="delivery-option">
+                            <input type="radio" name="deliveryType" value="pickup" checked onchange="toggleDeliveryType()">
+                            <span class="radio-custom"></span>
+                            <span class="option-text">
+                                <strong>Recoger en Local</strong>
+                                <small>Sin costo adicional</small>
+                            </span>
+                        </label>
+                        <label class="delivery-option">
+                            <input type="radio" name="deliveryType" value="delivery" onchange="toggleDeliveryType()">
+                            <span class="radio-custom"></span>
+                            <span class="option-text">
+                                <strong>Domicilio</strong>
+                                <small>Costo adicional: $5,000</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Formulario de datos del cliente -->
+                <div class="customer-form">
+                    <h3>Datos del Cliente</h3>
+                    <div class="form-group">
+                        <label for="customerName">Nombre completo *</label>
+                        <input type="text" id="customerName" name="customerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerPhone">Teléfono *</label>
+                        <input type="tel" id="customerPhone" name="customerPhone" required>
+                    </div>
+
+                    <!-- Campos adicionales para domicilio -->
+                    <div class="delivery-fields hidden" id="deliveryFields">
+                        <div class="form-group">
+                            <label for="customerAddress">Dirección completa *</label>
+                            <textarea id="customerAddress" name="customerAddress" rows="2" placeholder="Calle, número, barrio, referencias..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customerNotes">Notas adicionales (opcional)</label>
+                        <textarea id="customerNotes" name="customerNotes" rows="2" placeholder="Instrucciones especiales, alergias, etc."></textarea>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="closeCheckout()">
+                        Cancelar
+                    </button>
+                    <button class="btn-primary" onclick="confirmOrder()">
+                        Confirmar Pedido
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Producto -->
+        <div class="product-modal hidden" id="productModal">
+            <div class="modal-overlay" onclick="closeProductModal()"></div>
+            <div class="modal-product-content">
+                <!-- Botón de regresar -->
+                <button class="modal-back-btn" onclick="closeProductModal()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+
+                <div class="modal-product-layout">
+                    <!-- Lado izquierdo: Imagen/Carrusel -->
+                    <div class="modal-product-images">
+                        <div class="main-image-container">
+                            <img id="modalMainImage" src="" alt="Producto">
+                            <!-- Navegación del carrusel -->
+                            <button class="carousel-btn prev-btn hidden" onclick="previousImage()" id="prevImageBtn">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                            <button class="carousel-btn next-btn hidden" onclick="nextImage()" id="nextImageBtn">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <!-- Thumbnails con navegación -->
+                        <div class="thumbnails-wrapper hidden" id="thumbnailsWrapper">
+                            <button class="thumbnail-nav-btn prev" id="thumbPrevBtn" onclick="scrollThumbnails('left')">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                            <div class="image-thumbnails" id="imageThumbnails">
+                                <!-- Los thumbnails se generarán dinámicamente -->
+                            </div>
+                            <button class="thumbnail-nav-btn next" id="thumbNextBtn" onclick="scrollThumbnails('right')">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Lado derecho: Información del producto -->
+                    <div class="modal-product-info">
+                        <h2 id="modalProductName" class="modal-product-name">Nombre del Producto</h2>
+
+                        <!-- Precios -->
+                        <div class="modal-product-prices">
+                            <div class="modal-price-now" id="modalPriceNow">$0</div>
+                            <div class="modal-price-before hidden" id="modalPriceBefore">
+                                <span class="label">Antes:</span>
+                                <span class="value">$0</span>
+                            </div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="modal-product-description">
+                            <h3>Descripción</h3>
+                            <p id="modalProductDescription">Descripción del producto</p>
+                        </div>
+
+                        <!-- Selector de variantes (solo si hay variantes) -->
+                        <div class="modal-variants hidden" id="modalVariants">
+                            <label>Selecciona una opción</label>
+                            <select id="variantSelector" class="variant-selector">
+                                <option value="">-- Selecciona --</option>
+                            </select>
+                        </div>
+
+                        <!-- Control de cantidad -->
+                        <div class="modal-quantity-control">
+                            <label>Cantidad</label>
+                            <div class="quantity-selector">
+                                <button class="quantity-btn" onclick="decreaseModalQuantity()">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                                <input type="number" id="modalQuantity" value="1" min="1" readonly>
+                                <button class="quantity-btn" onclick="increaseModalQuantity()">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Botón agregar al carrito -->
+                        <button class="modal-add-to-cart" onclick="addToCartFromModal()">
+                            Agregar al Carrito
+                        </button>
+
+                        <!-- Botón pedir información -->
+                        <button class="modal-info-btn" onclick="requestProductInfo()">
+                            📱 Pedir Información del Producto
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

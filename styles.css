@@ -68,6 +68,13 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* Estilos para logo con imagen */
+.logo-image {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+
 /* Header derecho con estado y WhatsApp */
 .header-right {
     display: flex;

@@ -309,12 +309,18 @@ class ProductManager {
         const discountPercent = hasDiscount ?
             Math.round(((product.PrecioOriginal - product.PrecioFinal) / product.PrecioOriginal) * 100) : 0;
 
+        // Comentario: Obtener solo la primera imagen si hay múltiples URLs separadas por comas
+        let displayImage = product.URL_Imagen;
+        if (displayImage && displayImage.includes(',')) {
+            displayImage = displayImage.split(',')[0].trim();
+        }
+
         return `
-            <div class="product-card" data-product-id="${product.ID}">
+            <div class="product-card" data-product-id="${product.ID}" onclick="openProductModal(${product.ID})" style="cursor: pointer;">
                 <div class="product-image">
-                    ${product.URL_Imagen.startsWith('http') ?
-                        `<img src="${product.URL_Imagen}" alt="${product.NombreProducto}">` :
-                        `<span class="product-emoji">${product.URL_Imagen}</span>`
+                    ${displayImage.startsWith('http') ?
+                        `<img src="${displayImage}" alt="${product.NombreProducto}">` :
+                        `<span class="product-emoji">${displayImage}</span>`
                     }
                     ${hasDiscount ? `<div class="product-badge">-${discountPercent}%</div>` : ''}
                 </div>
@@ -326,7 +332,7 @@ class ProductManager {
                         ${hasDiscount ? `<span class="original-price">$${product.PrecioOriginal.toLocaleString()}</span>` : ''}
                         ${hasDiscount ? `<span class="discount-badge">-${discountPercent}%</span>` : ''}
                     </div>
-                    <button class="add-to-cart" onclick="addToCart(${product.ID})">
+                    <button class="add-to-cart" onclick="event.stopPropagation(); addToCart(${product.ID})">
                         Agregar al Carrito
                     </button>
                 </div>
@@ -431,6 +437,16 @@ class CartManager {
         this.cart = this.cart.filter(item => item.productId !== productId);
         this.saveCartToStorage();
         this.updateCartDisplay();
+
+        // Comentario: Si el carrito queda vacío y el checkout está abierto, cerrarlo
+        if (this.cart.length === 0 && isCheckoutOpen) {
+            checkoutManager.closeModal();
+        }
+
+        // Comentario: Si el checkout está abierto, re-renderizar
+        if (isCheckoutOpen && checkoutManager) {
+            checkoutManager.renderOrderSummary();
+        }
     }
 
     /**
@@ -447,6 +463,11 @@ class CartManager {
             item.quantity = newQuantity;
             this.saveCartToStorage();
             this.updateCartDisplay();
+
+            // Comentario: Si el checkout está abierto, re-renderizar
+            if (isCheckoutOpen && checkoutManager) {
+                checkoutManager.renderOrderSummary();
+            }
         }
     }
 
@@ -477,6 +498,7 @@ class CartManager {
         const cartFloat = document.getElementById('cartFloat');
         const cartCount = document.getElementById('cartCount');
         const cartTotal = document.getElementById('cartTotal');
+        const whatsappFloat = document.querySelector('.whatsapp-float');
 
         if (!cartFloat || !cartCount || !cartTotal) return;
 
@@ -485,8 +507,14 @@ class CartManager {
 
         if (itemCount === 0) {
             cartFloat.classList.add('hidden');
+            if (whatsappFloat) {
+                whatsappFloat.classList.remove('cart-visible');
+            }
         } else {
             cartFloat.classList.remove('hidden');
+            if (whatsappFloat) {
+                whatsappFloat.classList.add('cart-visible');
+            }
             cartCount.textContent = `${itemCount} producto${itemCount !== 1 ? 's' : ''}`;
             cartTotal.textContent = `$${total.toLocaleString()}`;
         }
@@ -591,14 +619,34 @@ class CheckoutManager {
 
         if (!orderItems) return;
 
-        // Comentario: Renderizar items del pedido
+        // Comentario: Renderizar items del pedido con controles de cantidad y botón eliminar
         orderItems.innerHTML = cartManager.cart.map(item => `
             <div class="order-item">
                 <div class="item-info">
                     <div class="item-name">${item.product.NombreProducto}</div>
-                    <div class="item-details">Cantidad: ${item.quantity} × $${item.product.PrecioFinal.toLocaleString()}</div>
+                    <div class="item-quantity-control">
+                        <button class="quantity-btn-small" onclick="decreaseCartItemQuantity(${item.productId})" aria-label="Disminuir cantidad">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 7H11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                        <span class="item-quantity">${item.quantity}</span>
+                        <button class="quantity-btn-small" onclick="increaseCartItemQuantity(${item.productId})" aria-label="Aumentar cantidad">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7 3V11M3 7H11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="item-details">$${item.product.PrecioFinal.toLocaleString()} c/u</div>
                 </div>
-                <div class="item-price">$${(item.product.PrecioFinal * item.quantity).toLocaleString()}</div>
+                <div class="item-actions">
+                    <div class="item-price">$${(item.product.PrecioFinal * item.quantity).toLocaleString()}</div>
+                    <button class="remove-item-btn" onclick="removeCartItem(${item.productId})" aria-label="Eliminar producto">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
         `).join('');
 
@@ -1077,6 +1125,413 @@ window.addEventListener('error', (e) => {
     });
 });
 
+// === MODAL DE PRODUCTO ===
+
+/**
+ * Comentario: Variables para el modal de producto
+ */
+let currentProductModal = null;
+let currentImageIndex = 0;
+let productImages = [];
+let modalQuantity = 1;
+
+/**
+ * Comentario: Abrir modal de producto
+ */
+function openProductModal(productId) {
+    const product = allProducts.find(p => p.ID === productId);
+    if (!product) return;
+
+    currentProductModal = product;
+    modalQuantity = 1;
+
+    // Comentario: Preparar imágenes del producto (soporte para múltiples imágenes)
+    // Soporte para dos formatos:
+    // 1. Múltiples columnas: URL_Imagen, URL_Imagen_2, URL_Imagen_3, etc.
+    // 2. URLs separadas por comas en una sola columna: "url1,url2,url3"
+    productImages = [];
+
+    if (product.URL_Imagen) {
+        // Comentario: Si URL_Imagen contiene comas, dividir por comas
+        if (product.URL_Imagen.includes(',')) {
+            productImages = product.URL_Imagen.split(',').map(url => url.trim()).filter(url => url.length > 0);
+        } else {
+            // Comentario: Si no tiene comas, usar formato de columnas múltiples
+            productImages.push(product.URL_Imagen);
+            if (product.URL_Imagen_2) productImages.push(product.URL_Imagen_2);
+            if (product.URL_Imagen_3) productImages.push(product.URL_Imagen_3);
+            if (product.URL_Imagen_4) productImages.push(product.URL_Imagen_4);
+            if (product.URL_Imagen_5) productImages.push(product.URL_Imagen_5);
+        }
+    }
+
+    currentImageIndex = 0;
+
+    // Comentario: Actualizar contenido del modal
+    document.getElementById('modalProductName').textContent = product.NombreProducto;
+    document.getElementById('modalPriceNow').textContent = `$${product.PrecioFinal.toLocaleString()}`;
+    document.getElementById('modalProductDescription').textContent = product.Descripcion;
+    document.getElementById('modalQuantity').value = modalQuantity;
+
+    // Comentario: Mostrar/ocultar precio anterior si hay descuento
+    const hasDiscount = product.PrecioOriginal && product.PrecioOriginal > product.PrecioFinal;
+    const priceBeforeElement = document.getElementById('modalPriceBefore');
+
+    if (hasDiscount) {
+        priceBeforeElement.classList.remove('hidden');
+        priceBeforeElement.querySelector('.value').textContent = `$${product.PrecioOriginal.toLocaleString()}`;
+    } else {
+        priceBeforeElement.classList.add('hidden');
+    }
+
+    // Comentario: Configurar imagen principal
+    updateModalImage();
+
+    // Comentario: Mostrar/ocultar controles del carrusel
+    const prevBtn = document.getElementById('prevImageBtn');
+    const nextBtn = document.getElementById('nextImageBtn');
+    const thumbnailsWrapper = document.getElementById('thumbnailsWrapper');
+
+    if (productImages.length > 1) {
+        prevBtn.classList.remove('hidden');
+        nextBtn.classList.remove('hidden');
+        thumbnailsWrapper.classList.remove('hidden');
+        renderThumbnails();
+        updateThumbnailNavButtons();
+    } else {
+        prevBtn.classList.add('hidden');
+        nextBtn.classList.add('hidden');
+        thumbnailsWrapper.classList.add('hidden');
+    }
+
+    // Comentario: Configurar selector de variantes si existen
+    const variantsContainer = document.getElementById('modalVariants');
+    const variantSelector = document.getElementById('variantSelector');
+
+    console.log('Producto:', product);
+    console.log('Variantes del producto:', product.Variantes);
+
+    if (product.Variantes && product.Variantes.trim()) {
+        const variants = product.Variantes.split(',').map(v => v.trim()).filter(v => v.length > 0);
+        console.log('Variantes procesadas:', variants);
+
+        // Limpiar opciones anteriores excepto la primera
+        variantSelector.innerHTML = '<option value="">-- Selecciona --</option>';
+
+        // Agregar opciones de variantes
+        variants.forEach(variant => {
+            const option = document.createElement('option');
+            option.value = variant;
+            option.textContent = variant;
+            variantSelector.appendChild(option);
+        });
+
+        variantsContainer.classList.remove('hidden');
+    } else {
+        variantsContainer.classList.add('hidden');
+    }
+
+    // Comentario: Mostrar modal
+    const modal = document.getElementById('productModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Comentario: Track evento
+    trackEvent('product_modal_opened', {
+        product_id: product.ID,
+        product_name: product.NombreProducto
+    });
+}
+
+/**
+ * Comentario: Cerrar modal de producto
+ */
+function closeProductModal() {
+    const modal = document.getElementById('productModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+    currentProductModal = null;
+    productImages = [];
+    currentImageIndex = 0;
+    modalQuantity = 1;
+}
+
+/**
+ * Comentario: Actualizar imagen principal del modal
+ */
+function updateModalImage() {
+    const mainImage = document.getElementById('modalMainImage');
+    const imageUrl = productImages[currentImageIndex];
+
+    if (imageUrl && imageUrl.startsWith('http')) {
+        mainImage.src = imageUrl;
+        mainImage.alt = currentProductModal.NombreProducto;
+    } else if (imageUrl) {
+        // Comentario: Si es emoji o texto, mostrar como texto
+        mainImage.src = '';
+        mainImage.alt = imageUrl;
+    }
+
+    // Comentario: Actualizar thumbnails activos
+    updateActiveThumbnail();
+}
+
+/**
+ * Comentario: Renderizar thumbnails de imágenes
+ */
+function renderThumbnails() {
+    const container = document.getElementById('imageThumbnails');
+    container.innerHTML = productImages.map((url, index) => {
+        if (url && url.startsWith('http')) {
+            return `
+                <div class="thumbnail ${index === currentImageIndex ? 'active' : ''}" onclick="goToImage(${index})">
+                    <img src="${url}" alt="Imagen ${index + 1}">
+                </div>
+            `;
+        }
+        return '';
+    }).join('');
+}
+
+/**
+ * Comentario: Actualizar thumbnail activo
+ */
+function updateActiveThumbnail() {
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    thumbnails.forEach((thumb, index) => {
+        if (index === currentImageIndex) {
+            thumb.classList.add('active');
+        } else {
+            thumb.classList.remove('active');
+        }
+    });
+}
+
+/**
+ * Comentario: Ir a imagen específica
+ */
+function goToImage(index) {
+    currentImageIndex = index;
+    updateModalImage();
+}
+
+/**
+ * Comentario: Imagen anterior en el carrusel
+ */
+function previousImage() {
+    currentImageIndex = (currentImageIndex - 1 + productImages.length) % productImages.length;
+    updateModalImage();
+}
+
+/**
+ * Comentario: Siguiente imagen en el carrusel
+ */
+function nextImage() {
+    currentImageIndex = (currentImageIndex + 1) % productImages.length;
+    updateModalImage();
+}
+
+/**
+ * Comentario: Aumentar cantidad en el modal
+ */
+function increaseModalQuantity() {
+    modalQuantity++;
+    document.getElementById('modalQuantity').value = modalQuantity;
+}
+
+/**
+ * Comentario: Disminuir cantidad en el modal
+ */
+function decreaseModalQuantity() {
+    if (modalQuantity > 1) {
+        modalQuantity--;
+        document.getElementById('modalQuantity').value = modalQuantity;
+    }
+}
+
+/**
+ * Comentario: Agregar al carrito desde el modal
+ */
+function addToCartFromModal() {
+    if (!currentProductModal) return;
+
+    // Comentario: Validar si hay variantes y si se seleccionó una
+    const variantSelector = document.getElementById('variantSelector');
+    const variantsContainer = document.getElementById('modalVariants');
+
+    if (!variantsContainer.classList.contains('hidden')) {
+        const selectedVariant = variantSelector.value;
+
+        if (!selectedVariant) {
+            // Mostrar alerta si no se ha seleccionado una variante
+            variantSelector.style.borderColor = '#ef4444';
+            variantSelector.style.animation = 'shake 0.5s';
+
+            // Restaurar borde después de la animación
+            setTimeout(() => {
+                variantSelector.style.borderColor = '';
+                variantSelector.style.animation = '';
+            }, 500);
+
+            return;
+        }
+
+        // Guardar la variante seleccionada en el nombre del producto temporalmente
+        const originalName = currentProductModal.NombreProducto;
+        currentProductModal.NombreProducto = `${originalName} (${selectedVariant})`;
+
+        // Agregar al carrito
+        for (let i = 0; i < modalQuantity; i++) {
+            addToCart(currentProductModal.ID);
+        }
+
+        // Restaurar nombre original
+        currentProductModal.NombreProducto = originalName;
+    } else {
+        // Si no hay variantes, agregar normalmente
+        for (let i = 0; i < modalQuantity; i++) {
+            addToCart(currentProductModal.ID);
+        }
+    }
+
+    // Comentario: Guardar info para tracking antes de cerrar modal
+    const productIdForTracking = currentProductModal.ID;
+    const productNameForTracking = currentProductModal.NombreProducto;
+
+    // Comentario: Cerrar modal
+    closeProductModal();
+
+    // Comentario: Track evento
+    trackEvent('add_to_cart_from_modal', {
+        product_id: productIdForTracking,
+        product_name: productNameForTracking,
+        quantity: modalQuantity
+    });
+}
+
+/**
+ * Comentario: Desplazar thumbnails hacia izquierda o derecha
+ */
+function scrollThumbnails(direction) {
+    const container = document.getElementById('imageThumbnails');
+    const scrollAmount = 80; // 1 thumbnail (70px + 10px gap)
+
+    if (direction === 'left') {
+        container.scrollLeft -= scrollAmount;
+    } else {
+        container.scrollLeft += scrollAmount;
+    }
+
+    // Comentario: Actualizar visibilidad de botones después de scroll
+    setTimeout(updateThumbnailNavButtons, 100);
+}
+
+/**
+ * Comentario: Actualizar visibilidad de botones de navegación de thumbnails
+ */
+function updateThumbnailNavButtons() {
+    const container = document.getElementById('imageThumbnails');
+    const prevBtn = document.getElementById('thumbPrevBtn');
+    const nextBtn = document.getElementById('thumbNextBtn');
+
+    if (!container || !prevBtn || !nextBtn) return;
+
+    // Comentario: Mostrar botones solo si hay más de 3 imágenes
+    if (productImages.length > 3) {
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        const scrollPos = container.scrollLeft;
+
+        // Comentario: Mostrar/ocultar botón izquierdo
+        if (scrollPos > 5) {
+            prevBtn.classList.add('visible');
+        } else {
+            prevBtn.classList.remove('visible');
+        }
+
+        // Comentario: Mostrar/ocultar botón derecho
+        if (scrollPos < maxScroll - 5) {
+            nextBtn.classList.add('visible');
+        } else {
+            nextBtn.classList.remove('visible');
+        }
+    } else {
+        // Comentario: Si hay 3 o menos imágenes, ocultar botones
+        prevBtn.classList.remove('visible');
+        nextBtn.classList.remove('visible');
+    }
+}
+
+/**
+ * Comentario: Event listener para scroll de thumbnails
+ */
+if (document.getElementById('imageThumbnails')) {
+    document.getElementById('imageThumbnails').addEventListener('scroll', updateThumbnailNavButtons);
+}
+
+// === FUNCIONES DEL CARRITO ===
+
+/**
+ * Comentario: Aumentar cantidad de un item en el carrito
+ */
+function increaseCartItemQuantity(productId) {
+    const item = cartManager.cart.find(item => item.productId === productId);
+    if (item) {
+        cartManager.updateQuantity(productId, item.quantity + 1);
+    }
+}
+
+/**
+ * Comentario: Disminuir cantidad de un item en el carrito
+ */
+function decreaseCartItemQuantity(productId) {
+    const item = cartManager.cart.find(item => item.productId === productId);
+    if (item) {
+        if (item.quantity > 1) {
+            cartManager.updateQuantity(productId, item.quantity - 1);
+        } else {
+            // Comentario: Si la cantidad es 1, preguntar si desea eliminar
+            if (confirm('¿Deseas eliminar este producto del carrito?')) {
+                cartManager.removeFromCart(productId);
+            }
+        }
+    }
+}
+
+/**
+ * Comentario: Eliminar un item del carrito
+ */
+function removeCartItem(productId) {
+    if (confirm('¿Estás seguro de eliminar este producto del carrito?')) {
+        cartManager.removeFromCart(productId);
+    }
+}
+
+/**
+ * Comentario: Pedir información del producto por WhatsApp
+ */
+function requestProductInfo() {
+    if (!currentProductModal) return;
+
+    // Comentario: Construir mensaje para WhatsApp
+    const productName = currentProductModal.NombreProducto;
+    const productPrice = currentProductModal.PrecioFinal.toLocaleString();
+
+    const message = `Hola! Me interesa este producto y quisiera más información:\n\n` +
+                   `📦 *${productName}*\n` +
+                   `💰 Precio: $${productPrice}\n\n` +
+                   `¿Podrían darme más detalles?`;
+
+    // Comentario: Abrir WhatsApp con el mensaje
+    const whatsappURL = `https://wa.me/${STORE_CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappURL, '_blank');
+
+    // Comentario: Track evento
+    trackEvent('request_product_info', {
+        product_id: currentProductModal.ID,
+        product_name: productName
+    });
+}
+
 // === EXPORTAR FUNCIONES PARA USO GLOBAL ===
 window.goHome = goHome;
 window.openWhatsApp = openWhatsApp;
@@ -1088,3 +1543,17 @@ window.startCheckout = startCheckout;
 window.closeCheckout = closeCheckout;
 window.toggleDeliveryType = toggleDeliveryType;
 window.confirmOrder = confirmOrder;
+window.openProductModal = openProductModal;
+window.closeProductModal = closeProductModal;
+window.previousImage = previousImage;
+window.nextImage = nextImage;
+window.goToImage = goToImage;
+window.increaseModalQuantity = increaseModalQuantity;
+window.decreaseModalQuantity = decreaseModalQuantity;
+window.addToCartFromModal = addToCartFromModal;
+window.scrollThumbnails = scrollThumbnails;
+window.updateThumbnailNavButtons = updateThumbnailNavButtons;
+window.increaseCartItemQuantity = increaseCartItemQuantity;
+window.decreaseCartItemQuantity = decreaseCartItemQuantity;
+window.removeCartItem = removeCartItem;
+window.requestProductInfo = requestProductInfo;
