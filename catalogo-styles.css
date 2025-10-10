@@ -80,8 +80,8 @@
 
 .logo-img-desktop,
 .logo-img-mobile {
-    width: 80px;
-    height: 80px;
+    width: 150px;
+    height: 150px;
     object-fit: contain;
 }
 
