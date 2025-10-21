@@ -12,6 +12,12 @@
 </head>
 <body>
     <div class="menu-container">
+        <!-- Banner de horarios dinámico -->
+        <div class="schedule-banner" id="scheduleBanner">
+            <span class="banner-icon" id="bannerIcon">🌟</span>
+            <span class="banner-text" id="bannerText">¡Estamos abiertos! Pide ahora y recibe tu pedido hoy mismo.</span>
+        </div>
+
         <!-- Header del catálogo -->
         <header class="menu-header">
             <div class="header-top">
@@ -22,12 +28,17 @@
                     </svg>
                 </button>
 
+                <!-- Botón de tema (móvil: derecha) -->
+                <button id="theme-toggle" class="theme-toggle" aria-label="Cambiar tema">
+                    ☀️
+                </button>
+
                 <!-- Información de la tienda (centro) -->
                 <div class="store-info">
                     <h1 class="store-title">TE LO VENDO RIOHACHA</h1>
                     <div class="store-status-menu">
                         <span class="status-indicator" id="status-indicator-menu"></span>
-                        <span class="status-text" id="store-status-menu">Abierto</span>
+                        <span class="status-text" id="store-status-menu">Abierto ahora</span>
                     </div>
                     <!-- Logo (visible solo en móvil, debajo del nombre) -->
                     <div class="logo-mobile">
@@ -290,7 +301,7 @@
                         <div class="modal-variants hidden" id="modalVariants">
                             <label>Selecciona una opción</label>
                             <select id="variantSelector" class="variant-selector">
-                                <option value="">-- Selecciona --</option>
+                                <!-- Las opciones se cargarán dinámicamente -->
                             </select>
                         </div>
 
@@ -317,10 +328,40 @@
                             Agregar al Carrito
                         </button>
 
-                        <!-- Botón pedir información -->
-                        <button class="modal-info-btn" onclick="requestProductInfo()">
-                            📱 Pedir Información del Producto
-                        </button>
+                        <!-- Políticas de garantías -->
+                        <div class="product-guarantees">
+                            <div class="guarantee-item">
+                                <span class="guarantee-icon">↩️</span>
+                                <span class="guarantee-text">Devolución gratis en 7 días</span>
+                            </div>
+                            <div class="guarantee-item">
+                                <span class="guarantee-icon">✅</span>
+                                <span class="guarantee-text">Garantía de satisfacción</span>
+                            </div>
+                            <div class="guarantee-item">
+                                <span class="guarantee-icon">🔒</span>
+                                <span class="guarantee-text">Compra 100% segura</span>
+                            </div>
+                        </div>
+
+                        <!-- Líneas de Atención -->
+                        <div class="contact-lines">
+                            <h4 class="contact-title">Líneas de Atención</h4>
+                            <div class="contact-links">
+                                <a href="https://instagram.com/telovendoriohacha" target="_blank" class="contact-link instagram-link">
+                                    📷 Instagram
+                                </a>
+                                <a href="#" class="contact-link whatsapp-link" onclick="event.preventDefault(); openWhatsAppWithProduct('Producto', 1)">
+                                    💬 WhatsApp 1
+                                </a>
+                                <a href="#" class="contact-link whatsapp-link" onclick="event.preventDefault(); openWhatsAppWithProduct('Producto', 2)">
+                                    💬 WhatsApp 2
+                                </a>
+                                <a href="#" class="contact-link whatsapp-link" onclick="event.preventDefault(); openWhatsAppWithProduct('Producto', 3)">
+                                    💬 WhatsApp 3
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

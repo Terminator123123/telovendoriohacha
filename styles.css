@@ -6,16 +6,42 @@
 }
 
 :root {
-    /* Colores según especificaciones exactas */
+    /* Modo oscuro (predeterminado) */
     --gradient-start: #0E2244;
     --gradient-end: #083957;
     --button-bg: #044A76;
     --button-shadow: #B61414;
     --footer-bg: #0A131F;
     --text-color: #FFFFFF;
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --card-bg: rgba(255, 255, 255, 0.1);
+    --card-border: rgba(255, 255, 255, 0.2);
+    --modal-bg: linear-gradient(135deg, #0E2244 0%, #083957 100%);
+    --input-bg: rgba(255, 255, 255, 0.1);
+    --input-border: rgba(255, 255, 255, 0.2);
+    --divider-color: rgba(255, 255, 255, 0.1);
+    --overlay-bg: rgba(0, 0, 0, 0.7);
 
     /* Tipografía */
     --font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body.light-mode {
+    /* Modo claro */
+    --gradient-start: #f0f4f8;
+    --gradient-end: #d9e2ec;
+    --text-color: #1a202c;
+    --text-secondary: #4a5568;
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
+    --button-bg: #044A76;
+    --button-shadow: #B61414;
+    --footer-bg: #e2e8f0;
+    --modal-bg: #ffffff;
+    --input-bg: #ffffff;
+    --input-border: #d1d5db;
+    --divider-color: #e5e7eb;
+    --overlay-bg: rgba(0, 0, 0, 0.5);
 }
 
 /* === ESTILOS GENERALES === */
@@ -80,6 +106,36 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
+}
+
+/* Botón de tema en página de inicio */
+.theme-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(15deg);
+}
+
+body.light-mode .theme-toggle {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+body.light-mode .theme-toggle:hover {
+    background: rgba(0, 0, 0, 0.2);
 }
 
 /* Indicador de estado Abierto/Cerrado */
@@ -174,12 +230,12 @@ body {
     padding: 12px 20px;
     border-radius: 25px;
     transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(10px);
 }
 
 .location-container:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.3);
     transform: translateY(-2px);
 }
 
@@ -193,33 +249,30 @@ body {
     color: var(--text-color);
 }
 
-/* Botón "Menú✅" con especificaciones exactas */
+/* Botón "Menú✅" con formato moderno (sin sombra roja) */
 .menu-button {
-    /* Color de fondo según especificaciones */
     background: var(--button-bg);
-    /* Color de fuente según especificaciones */
-    color: var(--text-color);
+    color: #ffffff;
     border: none;
     padding: 20px 50px;
     font-size: 1.5rem;
     font-weight: 600;
     font-family: var(--font-family);
     cursor: pointer;
-    /* Sombra dura y rectangular según especificaciones */
-    box-shadow: 6px 6px 0px var(--button-shadow);
-    border-radius: 0; /* Sin bordes redondeados para sombra rectangular */
+    border-radius: 12px;
     transition: all 0.3s ease;
     position: relative;
 }
 
 .menu-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 9px 9px 0px var(--button-shadow);
+    background: #033a61;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(4, 74, 118, 0.3);
 }
 
 .menu-button:active {
     transform: translateY(0);
-    box-shadow: 3px 3px 0px var(--button-shadow);
+    box-shadow: 0 2px 6px rgba(4, 74, 118, 0.3);
 }
 
 /* === FOOTER === */
@@ -230,6 +283,11 @@ body {
     color: var(--text-color);
     padding: 20px 0;
     text-align: center;
+}
+
+body.light-mode .footer {
+    background: var(--footer-bg);
+    color: var(--text-color);
 }
 
 .footer-text {

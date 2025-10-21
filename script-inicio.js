@@ -251,32 +251,87 @@ function initKeyboardShortcuts() {
 // === INICIALIZACIÓN ===
 
 /**
+ * Comentario: Inicializar tema desde localStorage
+ */
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const body = document.body;
+    const themeToggle = document.getElementById('theme-toggle');
+
+    if (!themeToggle) return;
+
+    if (savedTheme === 'light') {
+        body.classList.add('light-mode');
+        themeToggle.textContent = '🌙';
+    } else {
+        themeToggle.textContent = '☀️';
+    }
+
+    themeToggle.addEventListener('click', () => {
+        body.classList.toggle('light-mode');
+        const isLight = body.classList.contains('light-mode');
+
+        themeToggle.textContent = isLight ? '🌙' : '☀️';
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+
+        // Animación de transición
+        themeToggle.style.transform = 'rotate(360deg)';
+        setTimeout(() => themeToggle.style.transform = 'rotate(0deg)', 300);
+
+        trackEvent('theme_toggle', { theme: isLight ? 'light' : 'dark' });
+    });
+}
+
+/**
  * Comentario: Inicializar la aplicación cuando el DOM esté listo
  */
 document.addEventListener('DOMContentLoaded', function() {
-    // Comentario: Configurar estado inicial de la tienda
-    updateStoreStatusDisplay();
+    // Comentario: Verificar si el usuario vino por el botón de retroceder
+    const hasVisited = sessionStorage.getItem('hasVisitedCatalog');
 
-    // Comentario: Agregar tooltip con información adicional
-    addStatusTooltip();
+    if (!hasVisited) {
+        // Comentario: Primera visita - redirigir automáticamente al catálogo
+        trackEvent('auto_redirect_to_catalog');
 
-    // Comentario: Inicializar efectos visuales
-    initVisualEffects();
+        // Comentario: Marcar que ya visitó el catálogo
+        sessionStorage.setItem('hasVisitedCatalog', 'true');
 
-    // Comentario: Configurar atajos de teclado
-    initKeyboardShortcuts();
+        // Comentario: Animación de salida antes de redirección
+        document.body.style.transition = 'opacity 0.3s ease';
+        document.body.style.opacity = '0';
 
-    // Comentario: Actualizar estado cada minuto
-    setInterval(() => {
+        setTimeout(() => {
+            window.location.href = 'catalogo.html';
+        }, 300);
+    } else {
+        // Comentario: Usuario regresó con botón atrás - mostrar página normalmente
+        // Comentario: Configurar estado inicial de la tienda
         updateStoreStatusDisplay();
+
+        // Comentario: Agregar tooltip con información adicional
         addStatusTooltip();
-    }, 60000);
 
-    // Comentario: Track de vista de página
-    trackEvent('page_view_home');
+        // Comentario: Inicializar tema
+        initTheme();
 
-    console.log('🏪 TE LO VENDO RIOHACHA - Página de inicio cargada');
-    console.log('📱 Atajos: M = Menú, W = WhatsApp');
+        // Comentario: Inicializar efectos visuales
+        initVisualEffects();
+
+        // Comentario: Configurar atajos de teclado
+        initKeyboardShortcuts();
+
+        // Comentario: Actualizar estado cada minuto
+        setInterval(() => {
+            updateStoreStatusDisplay();
+            addStatusTooltip();
+        }, 60000);
+
+        // Comentario: Track de vista de página
+        trackEvent('page_view_home_return');
+
+        console.log('🏪 TE LO VENDO RIOHACHA - Página de inicio cargada');
+        console.log('📱 Atajos: M = Menú, W = WhatsApp');
+    }
 });
 
 // === MANEJO DE ERRORES ===

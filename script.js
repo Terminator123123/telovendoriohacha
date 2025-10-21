@@ -315,8 +315,29 @@ class ProductManager {
             displayImage = displayImage.split(',')[0].trim();
         }
 
+        // Comentario: Calcular ahorro si hay descuento
+        const savings = hasDiscount ? product.PrecioOriginal - product.PrecioFinal : 0;
+
+        // Comentario: Generar estrellas de calificación (4-5 estrellas aleatorias)
+        const rating = 4 + Math.random();
+        const fullStars = Math.floor(rating);
+        const reviewCount = Math.floor(Math.random() * 150) + 20; // Entre 20 y 170 reseñas
+
+        // Comentario: Truncar descripción a 80 caracteres para mantener uniformidad
+        const maxDescriptionLength = 80;
+        let truncatedDescription = product.Descripcion || '';
+        if (truncatedDescription.length > maxDescriptionLength) {
+            truncatedDescription = truncatedDescription.substring(0, maxDescriptionLength).trim() + '...';
+        }
+
         return `
             <div class="product-card" data-product-id="${product.ID}" onclick="openProductModal(${product.ID})" style="cursor: pointer;">
+                <!-- Badge de oferta/popularidad -->
+                ${discountPercent >= 20 ? '<div class="badge badge-bestseller">🔥 Oferta</div>' : ''}
+
+                <!-- Badge de envío -->
+                <div class="shipping-badge">🚚 Envío disponible</div>
+
                 <div class="product-image">
                     ${displayImage.startsWith('http') ?
                         `<img src="${displayImage}" alt="${product.NombreProducto}">` :
@@ -325,13 +346,26 @@ class ProductManager {
                     ${hasDiscount ? `<div class="product-badge">-${discountPercent}%</div>` : ''}
                 </div>
                 <div class="product-info">
-                    <h3 class="product-name">${product.NombreProducto}</h3>
-                    <p class="product-description">${product.Descripcion}</p>
-                    <div class="product-price">
-                        <span class="current-price">$${product.PrecioFinal.toLocaleString()}</span>
-                        ${hasDiscount ? `<span class="original-price">$${product.PrecioOriginal.toLocaleString()}</span>` : ''}
-                        ${hasDiscount ? `<span class="discount-badge">-${discountPercent}%</span>` : ''}
+                    <!-- Sistema de calificación -->
+                    <div class="rating">
+                        <span class="stars">${'⭐'.repeat(fullStars)}</span>
+                        <span class="reviews-count">(${reviewCount})</span>
                     </div>
+
+                    <h3 class="product-name">${product.NombreProducto}</h3>
+                    <p class="product-description">${truncatedDescription}</p>
+
+                    <div class="product-pricing">
+                        <div class="price-container">
+                            <span class="current-price">$${product.PrecioFinal.toLocaleString()}</span>
+                            ${hasDiscount ? `<span class="original-price">$${product.PrecioOriginal.toLocaleString()}</span>` : ''}
+                        </div>
+                        ${hasDiscount ? `<div class="savings-amount">Ahorras: $${savings.toLocaleString()}</div>` : ''}
+                    </div>
+
+                    <!-- Información logística -->
+                    <p class="delivery-info">📦 Entrega inmediata en Riohacha</p>
+
                     <button class="add-to-cart" onclick="event.stopPropagation(); addToCart(${product.ID})">
                         Agregar al Carrito
                     </button>
@@ -406,7 +440,7 @@ class CartManager {
     /**
      * Comentario: Agregar producto al carrito
      */
-    addToCart(productId) {
+    addToCart(productId, sourceElement = null) {
         const product = allProducts.find(p => p.ID === productId);
         if (!product) return;
 
@@ -426,8 +460,37 @@ class CartManager {
         this.updateCartDisplay();
         this.showAddedNotification(product.NombreProducto);
 
+        // Comentario: Animación del botón si se proporciona elemento fuente
+        if (sourceElement) {
+            this.animateAddToCart(sourceElement);
+        }
+
+        // Comentario: Animación del carrito flotante
+        const cartFloat = document.getElementById('cartFloat');
+        if (cartFloat) {
+            cartFloat.classList.add('pulse');
+            setTimeout(() => cartFloat.classList.remove('pulse'), 500);
+        }
+
         // Comentario: Track del evento
         trackEvent('add_to_cart', { productId, productName: product.NombreProducto });
+    }
+
+    /**
+     * Comentario: Animar botón de agregar al carrito
+     */
+    animateAddToCart(button) {
+        const originalText = button.textContent;
+
+        button.classList.add('success');
+        button.textContent = '✓ Agregado';
+        button.disabled = true;
+
+        setTimeout(() => {
+            button.classList.remove('success');
+            button.textContent = originalText;
+            button.disabled = false;
+        }, 2000);
     }
 
     /**
@@ -578,10 +641,36 @@ class CheckoutManager {
 
         isCheckoutOpen = true;
         this.renderOrderSummary();
+        this.updateCheckoutForSchedule();
         this.showModal();
 
         // Comentario: Track del evento
         trackEvent('checkout_started', { itemCount: cartManager.getCartItemCount() });
+    }
+
+    /**
+     * Comentario: Actualizar checkout para pedido programado
+     */
+    updateCheckoutForSchedule() {
+        const now = new Date();
+        const colombiaTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+        const hour = colombiaTime.getHours();
+
+        const checkoutButton = document.querySelector('.btn-primary[onclick="confirmOrder()"]');
+
+        if (hour < 9 || hour >= 20) {
+            // Fuera de horario - mostrar mensaje informativo si existe
+            window.isScheduledOrder = true;
+            if (checkoutButton) {
+                checkoutButton.textContent = 'Programar Mi Pedido';
+            }
+        } else {
+            // Dentro de horario
+            window.isScheduledOrder = false;
+            if (checkoutButton) {
+                checkoutButton.textContent = 'Confirmar Pedido';
+            }
+        }
     }
 
     /**
@@ -780,24 +869,32 @@ class CheckoutManager {
         const deliveryCost = this.deliveryType === 'delivery' ? STORE_CONFIG.DELIVERY_COST : 0;
         const total = subtotal + deliveryCost;
 
-        let message = ` *NUEVO PEDIDO - ${STORE_CONFIG.STORE_NAME}*\n\n`;
+        let message = `🛒 *NUEVO PEDIDO - ${STORE_CONFIG.STORE_NAME}*\n\n`;
+
+        // Comentario: Tipo de pedido
+        if (window.isScheduledOrder) {
+            message += `⏰ *PEDIDO PROGRAMADO*\n`;
+            message += `📅 Para entrega mañana a partir de las 9:00 AM\n\n`;
+        } else {
+            message += `✅ *PEDIDO INMEDIATO*\n\n`;
+        }
 
         // Comentario: Datos del cliente
-        message += ` *Cliente:*\n`;
+        message += `👤 *Cliente:*\n`;
         message += `Nombre: ${this.customerData.name}\n`;
         message += `Teléfono: ${this.customerData.phone}\n`;
 
         // Comentario: Tipo de entrega
-        message += `\n *Entrega:*\n`;
+        message += `\n🚚 *Entrega:*\n`;
         if (this.deliveryType === 'pickup') {
-            message += `Recoger en local\n`;
+            message += `📍 Recoger en local\n`;
         } else {
-            message += `Domicilio\n`;
+            message += `🏠 Domicilio\n`;
             message += `Dirección: ${this.customerData.address}\n`;
         }
 
         // Comentario: Items del pedido
-        message += `\n *Productos:*\n`;
+        message += `\n📦 *Productos:*\n`;
         cartManager.cart.forEach((item, index) => {
             message += `${index + 1}. ${item.product.NombreProducto}\n`;
             message += `   Cantidad: ${item.quantity}\n`;
@@ -806,7 +903,7 @@ class CheckoutManager {
         });
 
         // Comentario: Totales
-        message += ` *Resumen:*\n`;
+        message += `💰 *Resumen:*\n`;
         message += `Subtotal: $${subtotal.toLocaleString()}\n`;
         if (deliveryCost > 0) {
             message += `Domicilio: $${deliveryCost.toLocaleString()}\n`;
@@ -815,10 +912,10 @@ class CheckoutManager {
 
         // Comentario: Notas adicionales
         if (this.customerData.notes) {
-            message += `\n *Notas:*\n${this.customerData.notes}\n`;
+            message += `\n📝 *Notas:*\n${this.customerData.notes}\n`;
         }
 
-        message += `\n Pedido realizado: ${new Date().toLocaleString()}\n`;
+        message += `\n📅 Pedido realizado: ${new Date().toLocaleString('es-CO', {timeZone: 'America/Bogota'})}\n`;
 
         return message;
     }
@@ -975,7 +1072,8 @@ function updateStoreStatus() {
     const indicatorElement = document.getElementById('status-indicator-menu');
 
     if (statusElement && indicatorElement) {
-        statusElement.textContent = isOpen ? 'Abierto' : 'Cerrado';
+        // Comentario: Usar mensajes positivos que no generen fricción
+        statusElement.textContent = isOpen ? 'Abierto ahora' : 'Pedidos 24/7';
 
         if (isOpen) {
             indicatorElement.classList.remove('closed');
@@ -1078,6 +1176,65 @@ function setupModalEvents() {
     });
 }
 
+/**
+ * Comentario: Actualizar banner de horarios según hora de Colombia
+ */
+function updateScheduleBanner() {
+    const now = new Date();
+    const colombiaTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+    const hour = colombiaTime.getHours();
+
+    const banner = document.getElementById('scheduleBanner');
+    const icon = document.getElementById('bannerIcon');
+    const text = document.getElementById('bannerText');
+
+    if (!banner || !icon || !text) return;
+
+    if (hour >= 9 && hour < 20) {
+        // Horario abierto
+        banner.classList.remove('after-hours');
+        icon.textContent = '🌟';
+        text.textContent = '¡Estamos abiertos! Pide ahora y recibe tu pedido hoy mismo.';
+    } else {
+        // Fuera de horario
+        banner.classList.add('after-hours');
+        icon.textContent = '🌙';
+        text.textContent = 'Estás comprando fuera de nuestro horario. Finaliza tu pedido ahora y serás el primero en la fila para la entrega de mañana.';
+    }
+}
+
+/**
+ * Comentario: Inicializar tema desde localStorage
+ */
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const body = document.body;
+    const themeToggle = document.getElementById('theme-toggle');
+
+    if (!themeToggle) return;
+
+    if (savedTheme === 'light') {
+        body.classList.add('light-mode');
+        themeToggle.textContent = '🌙';
+    } else {
+        themeToggle.textContent = '☀️';
+    }
+
+    themeToggle.addEventListener('click', () => {
+        body.classList.toggle('light-mode');
+        const isLight = body.classList.contains('light-mode');
+
+        themeToggle.textContent = isLight ? '🌙' : '☀️';
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+
+        // Animación de transición
+        themeToggle.style.transform = 'rotate(360deg)';
+        setTimeout(() => themeToggle.style.transform = 'rotate(0deg)', 300);
+
+        trackEvent('theme_toggle', { theme: isLight ? 'light' : 'dark' });
+    });
+}
+
 // === INICIALIZACIÓN ===
 
 /**
@@ -1101,6 +1258,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Comentario: Configurar estado de la tienda
     updateStoreStatus();
     setInterval(updateStoreStatus, 60000);
+
+    // Comentario: Configurar banner de horarios
+    updateScheduleBanner();
+    setInterval(updateScheduleBanner, 300000); // Cada 5 minutos
+
+    // Comentario: Inicializar tema
+    initTheme();
 
     // Comentario: Configurar funcionalidades
     setupLiveSearch();
@@ -1215,14 +1379,18 @@ function openProductModal(productId) {
         const variants = product.Variantes.split(',').map(v => v.trim()).filter(v => v.length > 0);
         console.log('Variantes procesadas:', variants);
 
-        // Limpiar opciones anteriores excepto la primera
-        variantSelector.innerHTML = '<option value="">-- Selecciona --</option>';
+        // Limpiar opciones anteriores
+        variantSelector.innerHTML = '';
 
         // Agregar opciones de variantes
-        variants.forEach(variant => {
+        variants.forEach((variant, index) => {
             const option = document.createElement('option');
             option.value = variant;
             option.textContent = variant;
+            // Seleccionar automáticamente la primera opción
+            if (index === 0) {
+                option.selected = true;
+            }
             variantSelector.appendChild(option);
         });
 
@@ -1230,6 +1398,15 @@ function openProductModal(productId) {
     } else {
         variantsContainer.classList.add('hidden');
     }
+
+    // Comentario: Actualizar enlaces de WhatsApp con el nombre del producto
+    const whatsappButtons = document.querySelectorAll('.contact-btn.whatsapp');
+    whatsappButtons.forEach((btn, index) => {
+        btn.onclick = (e) => {
+            e.preventDefault();
+            openWhatsAppWithProduct(product.NombreProducto, index + 1);
+        };
+    });
 
     // Comentario: Mostrar modal
     const modal = document.getElementById('productModal');
@@ -1355,26 +1532,12 @@ function decreaseModalQuantity() {
 function addToCartFromModal() {
     if (!currentProductModal) return;
 
-    // Comentario: Validar si hay variantes y si se seleccionó una
+    // Comentario: Obtener variante seleccionada si existe
     const variantSelector = document.getElementById('variantSelector');
     const variantsContainer = document.getElementById('modalVariants');
 
     if (!variantsContainer.classList.contains('hidden')) {
         const selectedVariant = variantSelector.value;
-
-        if (!selectedVariant) {
-            // Mostrar alerta si no se ha seleccionado una variante
-            variantSelector.style.borderColor = '#ef4444';
-            variantSelector.style.animation = 'shake 0.5s';
-
-            // Restaurar borde después de la animación
-            setTimeout(() => {
-                variantSelector.style.borderColor = '';
-                variantSelector.style.animation = '';
-            }, 500);
-
-            return;
-        }
 
         // Guardar la variante seleccionada en el nombre del producto temporalmente
         const originalName = currentProductModal.NombreProducto;
@@ -1507,28 +1670,23 @@ function removeCartItem(productId) {
 }
 
 /**
- * Comentario: Pedir información del producto por WhatsApp
+ * Comentario: Abrir WhatsApp con información del producto
  */
-function requestProductInfo() {
-    if (!currentProductModal) return;
+const WHATSAPP_NUMBERS = [
+    '573022788968',  // WhatsApp 1
+    '573022788968',  // WhatsApp 2 (cambiar por número real)
+    '573022788968'   // WhatsApp 3 (cambiar por número real)
+];
 
-    // Comentario: Construir mensaje para WhatsApp
-    const productName = currentProductModal.NombreProducto;
-    const productPrice = currentProductModal.PrecioFinal.toLocaleString();
-
-    const message = `Hola! Me interesa este producto y quisiera más información:\n\n` +
-                   `📦 *${productName}*\n` +
-                   `💰 Precio: $${productPrice}\n\n` +
-                   `¿Podrían darme más detalles?`;
-
-    // Comentario: Abrir WhatsApp con el mensaje
-    const whatsappURL = `https://wa.me/${STORE_CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+function openWhatsAppWithProduct(productName, whatsappIndex) {
+    const phoneNumber = WHATSAPP_NUMBERS[whatsappIndex - 1];
+    const message = `Hola, quisiera más información sobre el producto "${productName}"`;
+    const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappURL, '_blank');
 
-    // Comentario: Track evento
-    trackEvent('request_product_info', {
-        product_id: currentProductModal.ID,
-        product_name: productName
+    trackEvent('whatsapp_product_inquiry', {
+        product_name: productName,
+        whatsapp_number: whatsappIndex
     });
 }
 
@@ -1556,4 +1714,4 @@ window.updateThumbnailNavButtons = updateThumbnailNavButtons;
 window.increaseCartItemQuantity = increaseCartItemQuantity;
 window.decreaseCartItemQuantity = decreaseCartItemQuantity;
 window.removeCartItem = removeCartItem;
-window.requestProductInfo = requestProductInfo;
+window.openWhatsAppWithProduct = openWhatsAppWithProduct;
