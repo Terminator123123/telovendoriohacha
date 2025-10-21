@@ -2,7 +2,7 @@
 const STORE_CONFIG = {
     // --- CONFIGURACIÓN DE LA TIENDA ---
     GOOGLE_SHEET_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfIzj8mShCFdiCE2HJ_cFDgzuYrssOwTGYPUCRuWDSudt-z34lMha21Y0ou3gf1N6SKTR34JRLjKJU/pub?gid=675350694&single=true&output=csv', // URL que SÍ funciona
-    WHATSAPP_NUMBER: '573022788968', // Incluir código de país
+    WHATSAPP_NUMBER: '573007148250', // Número principal - Incluir código de país
     DELIVERY_COST: 5000, // Costo de domicilio en número
     STORE_NAME: 'TE LO VENDO RIOHACHA',
     GOOGLE_MAPS_URL: 'https://maps.app.goo.gl/iDLS8qAVYFDYNmWw6', // URL de la ubicación
@@ -1673,9 +1673,9 @@ function removeCartItem(productId) {
  * Comentario: Abrir WhatsApp con información del producto
  */
 const WHATSAPP_NUMBERS = [
-    '573022788968',  // WhatsApp 1
-    '573022788968',  // WhatsApp 2 (cambiar por número real)
-    '573022788968'   // WhatsApp 3 (cambiar por número real)
+    '573007148250',  // WhatsApp 1 - Línea principal
+    '573223639419',  // WhatsApp 2 - Línea de atención
+    '573022801068'   // WhatsApp 3 - Línea de atención
 ];
 
 function openWhatsAppWithProduct(productName, whatsappIndex) {

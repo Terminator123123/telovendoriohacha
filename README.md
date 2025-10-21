@@ -202,7 +202,7 @@ Editar `script.js` líneas 3-10:
 ```javascript
 const STORE_CONFIG = {
     GOOGLE_SHEET_URL: 'https://docs.google.com/spreadsheets/d/TU_SHEET_ID/export?format=csv',
-    WHATSAPP_NUMBER: '573022788968',
+    WHATSAPP_NUMBER: '573007148250', // Número principal
     DELIVERY_COST: 5000,
     STORE_NAME: 'TE LO VENDO RIOHACHA',
     GOOGLE_MAPS_URL: 'https://maps.google.com/?q=Talashi+Local+219+Riohacha'
@@ -450,8 +450,8 @@ const orders = analytics.filter(e => e.event === 'order_confirmed');
 
 ### WhatsApp no funciona
 1. Verificar número con código de país
-2. Formato correcto: `573022788968`
-3. Sin espacios, guiones ni símbolos
+2. Formato correcto: `573007148250` (sin espacios, guiones ni símbolos)
+3. Números secundarios: `573223639419`, `573022801068`
 
 ### Cambios no se reflejan
 1. Hacer push a GitHub: `git push origin main`
@@ -511,7 +511,8 @@ const orders = analytics.filter(e => e.event === 'order_confirmed');
 
 - **Nombre:** TE LO VENDO RIOHACHA
 - **Ubicación:** Talashi Local 219, Riohacha, La Guajira
-- **WhatsApp:** +57 302 278 8968
+- **WhatsApp Principal:** +57 300 7148250
+- **Líneas de Atención:** +57 322 3639419 | +57 302 2801068
 - **Sitio web:** https://telovendoriohacha.com
 
 ### Desarrollador

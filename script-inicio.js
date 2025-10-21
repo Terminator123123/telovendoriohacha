@@ -1,7 +1,7 @@
 // === CONFIGURACIÓN DE LA TIENDA ===
 const STORE_CONFIG = {
     name: 'TE LO VENDO RIOHACHA',
-    whatsappNumber: '573022788968', // Número real de WhatsApp
+    whatsappNumber: '573007148250', // Número principal de WhatsApp
     googleMapsUrl: 'https://maps.app.goo.gl/iDLS8qAVYFDYNmWw6', // URL real de Google Maps
     // Horario: Lunes a Sábado de 9am a 8pm, Domingo 9am a 1pm
     businessHours: {
