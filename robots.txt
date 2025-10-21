@@ -1,0 +1,20 @@
+# robots.txt para TE LO VENDO RIOHACHA
+# Última actualización: 2025-10-21
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://telovendoriohacha.com/sitemap.xml
+
+# Permitir rastreo de Google específicamente
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+# Bloquear archivos innecesarios (si existen)
+Disallow: /google-sheets-scripts/
+Disallow: /*.json$
+Disallow: /README.md

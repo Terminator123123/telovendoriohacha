@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 15px;
+      margin: 0;
+      background: #f5f5f5;
+    }
+
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #044A76;
+      font-size: 18px;
+      border-bottom: 2px solid #044A76;
+      padding-bottom: 10px;
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #044A76;
+    }
+
+    .resultados {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .producto-item {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .producto-item:hover {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      transform: translateX(4px);
+    }
+
+    .producto-nombre {
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+
+    .producto-info {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .producto-precio {
+      color: #044A76;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .badge-visible {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .badge-oculto {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .no-resultados {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔍 Buscar Producto</h2>
+
+    <div class="search-box">
+      <input
+        type="text"
+        id="busqueda"
+        placeholder="Escribe el nombre o descripción del producto..."
+        oninput="buscar()"
+        autofocus
+      >
+    </div>
+
+    <div class="loading" id="loading">
+      Buscando...
+    </div>
+
+    <div class="resultados" id="resultados">
+      <div class="no-resultados">
+        📦 Escribe algo para buscar productos
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let timeoutBusqueda = null;
+
+    // Función de búsqueda con delay
+    function buscar() {
+      clearTimeout(timeoutBusqueda);
+
+      const termino = document.getElementById('busqueda').value.trim();
+
+      if (termino.length < 2) {
+        document.getElementById('resultados').innerHTML = `
+          <div class="no-resultados">
+            📦 Escribe al menos 2 caracteres para buscar
+          </div>
+        `;
+        return;
+      }
+
+      // Esperar 500ms antes de buscar (evitar llamadas excesivas)
+      timeoutBusqueda = setTimeout(function() {
+        realizarBusqueda(termino);
+      }, 500);
+    }
+
+    // Realizar búsqueda
+    function realizarBusqueda(termino) {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('resultados').innerHTML = '';
+
+      google.script.run
+        .withSuccessHandler(mostrarResultados)
+        .withFailureHandler(function(error) {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('resultados').innerHTML = `
+            <div class="no-resultados">
+              ❌ Error al buscar: ${error.message}
+            </div>
+          `;
+        })
+        .buscarProductos(termino);
+    }
+
+    // Mostrar resultados
+    function mostrarResultados(productos) {
+      document.getElementById('loading').style.display = 'none';
+      const contenedor = document.getElementById('resultados');
+
+      if (productos.length === 0) {
+        contenedor.innerHTML = `
+          <div class="no-resultados">
+            😕 No se encontraron productos con ese término
+          </div>
+        `;
+        return;
+      }
+
+      contenedor.innerHTML = productos.map(function(prod) {
+        const badgeVisible = prod.visible === 'SI'
+          ? '<span class="badge badge-visible">Visible</span>'
+          : '<span class="badge badge-oculto">Oculto</span>';
+
+        return `
+          <div class="producto-item" onclick="seleccionarProducto(${prod.fila})">
+            <div class="producto-nombre">
+              ${prod.nombre}
+              ${badgeVisible}
+            </div>
+            <div class="producto-info">
+              ID: ${prod.id} | ${prod.categoria || 'Sin categoría'}
+            </div>
+            <div class="producto-precio">
+              $${formatearNumero(prod.precio)}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Seleccionar producto (ir a la fila)
+    function seleccionarProducto(fila) {
+      google.script.run
+        .withSuccessHandler(function() {
+          alert('✅ Producto seleccionado. Puedes cerrrar este panel.');
+        })
+        .seleccionarFila(fila);
+    }
+
+    // Formatear número con comas
+    function formatearNumero(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+  </script>
+</body>
+</html>
