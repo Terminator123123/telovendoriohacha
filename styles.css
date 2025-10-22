@@ -381,15 +381,13 @@ body.light-mode .footer {
    ============================================ */
 
 .site-footer-home {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: static;
+    width: 100%;
     background: #1a1a1a;
     border-top: 1px solid #333;
     padding: 15px 20px;
     text-align: center;
-    z-index: 999;
+    margin-top: 40px;
 }
 
 .site-footer-home .copyright {
@@ -405,6 +403,19 @@ body.light-mode .footer {
     font-size: 11px;
     margin: 0;
     font-weight: 300;
+}
+
+.site-footer-home .developer a,
+.site-footer .developer a {
+    color: #888888;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.site-footer-home .developer a:hover,
+.site-footer .developer a:hover {
+    color: #25D366;
+    text-decoration: underline;
 }
 
 /* Responsive */
