@@ -63,7 +63,16 @@ body {
     flex-direction: column;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 20px 0 20px;
+}
+
+/* Main content con altura suficiente para que footer quede fuera de vista */
+main {
+    flex: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* === HEADER === */

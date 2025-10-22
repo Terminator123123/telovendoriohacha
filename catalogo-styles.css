@@ -1948,7 +1948,7 @@ body.light-mode .contact-link.whatsapp-link:hover {
    ============================================ */
 
 .site-footer {
-    margin-top: 40px;
+    margin-top: 100vh;
     padding: 20px 15px;
     text-align: center;
     background: #1a1a1a;
