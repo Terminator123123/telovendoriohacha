@@ -375,3 +375,54 @@ body.light-mode .footer {
     opacity: 0.6;
     pointer-events: none;
 }
+
+/* ============================================
+   FOOTER COPYRIGHT - BARRA NEGRA PROFESIONAL
+   ============================================ */
+
+.site-footer-home {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1a1a1a;
+    border-top: 1px solid #333;
+    padding: 15px 20px;
+    text-align: center;
+    z-index: 999;
+}
+
+.site-footer-home .copyright {
+    color: #ffffff;
+    font-size: 13px;
+    margin: 0 0 6px 0;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+.site-footer-home .developer {
+    color: #888888;
+    font-size: 11px;
+    margin: 0;
+    font-weight: 300;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .site-footer-home {
+        padding: 12px 15px;
+    }
+
+    .site-footer-home .copyright {
+        font-size: 11px;
+    }
+
+    .site-footer-home .developer {
+        font-size: 10px;
+    }
+
+    /* Ajustar contenido para que no quede detrás del footer */
+    .container {
+        padding-bottom: 90px;
+    }
+}

@@ -76,7 +76,7 @@ function openWhatsApp() {
         `¡Hola! Me interesa conocer más sobre los productos de ${STORE_CONFIG.name}. ¿Podrían ayudarme?`
     );
 
-    const whatsappUrl = `https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${message}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${STORE_CONFIG.whatsappNumber}&text=${message}`;
 
     // Comentario: Abrir WhatsApp en nueva ventana/pestaña
     window.open(whatsappUrl, '_blank');

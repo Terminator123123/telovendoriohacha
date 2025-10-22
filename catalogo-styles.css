@@ -1942,3 +1942,46 @@ body.light-mode .contact-link.whatsapp-link:hover {
         height: 12px;
     }
 }
+
+/* ============================================
+   FOOTER COPYRIGHT - BARRA NEGRA PROFESIONAL
+   ============================================ */
+
+.site-footer {
+    margin-top: 40px;
+    padding: 20px 15px;
+    text-align: center;
+    background: #1a1a1a;
+    border-top: 1px solid #333;
+}
+
+.site-footer .copyright {
+    color: #ffffff;
+    font-size: 14px;
+    margin: 0 0 8px 0;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+.site-footer .developer {
+    color: #888888;
+    font-size: 12px;
+    margin: 0;
+    font-weight: 300;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .site-footer {
+        margin-top: 30px;
+        padding: 15px 10px;
+    }
+
+    .site-footer .copyright {
+        font-size: 12px;
+    }
+
+    .site-footer .developer {
+        font-size: 11px;
+    }
+}

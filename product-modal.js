@@ -443,7 +443,7 @@ class ProductModal {
             `¿Está disponible y cuál sería la forma de entrega?`;
 
         const whatsappNumber = window.STORE_CONFIG ? window.STORE_CONFIG.WHATSAPP_NUMBER : '573022788968';
-        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
 
         // Track del evento

@@ -843,7 +843,7 @@ class CheckoutManager {
         const message = this.generateWhatsAppMessage();
 
         // Comentario: Enviar a WhatsApp
-        const whatsappUrl = `https://wa.me/${STORE_CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${STORE_CONFIG.WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
 
         // Comentario: Track del evento
@@ -951,7 +951,7 @@ function openWhatsApp() {
         `¡Hola! Me interesa conocer más sobre los productos de ${STORE_CONFIG.STORE_NAME}. ¿Podrían ayudarme?`
     );
 
-    const whatsappUrl = `https://wa.me/${STORE_CONFIG.WHATSAPP_NUMBER}?text=${message}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${STORE_CONFIG.WHATSAPP_NUMBER}&text=${message}`;
     window.open(whatsappUrl, '_blank');
 
     trackEvent('whatsapp_click_menu');
@@ -1399,12 +1399,21 @@ function openProductModal(productId) {
         variantsContainer.classList.add('hidden');
     }
 
-    // Comentario: Actualizar enlaces de WhatsApp con el nombre del producto
+    // Comentario: Actualizar enlaces de WhatsApp del modal con la información completa del producto
     const whatsappButtons = document.querySelectorAll('.contact-btn.whatsapp');
     whatsappButtons.forEach((btn, index) => {
         btn.onclick = (e) => {
             e.preventDefault();
-            openWhatsAppWithProduct(product.NombreProducto, index + 1);
+            openWhatsAppWithProduct(product, index + 1);
+        };
+    });
+
+    // Comentario: Actualizar TAMBIÉN los enlaces del footer con el producto actual
+    const footerWhatsappLinks = document.querySelectorAll('.contact-link.whatsapp-link');
+    footerWhatsappLinks.forEach((link, index) => {
+        link.onclick = (e) => {
+            e.preventDefault();
+            openWhatsAppWithProduct(product, index + 1);
         };
     });
 
@@ -1678,15 +1687,80 @@ const WHATSAPP_NUMBERS = [
     '573022801068'   // WhatsApp 3 - Línea de atención
 ];
 
-function openWhatsAppWithProduct(productName, whatsappIndex) {
+function openWhatsAppWithProduct(product, whatsappIndex) {
     const phoneNumber = WHATSAPP_NUMBERS[whatsappIndex - 1];
-    const message = `Hola, quisiera más información sobre el producto "${productName}"`;
-    const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+    // Comentario: Si product es string (caso antiguo de compatibilidad), crear objeto simple
+    if (typeof product === 'string') {
+        product = { NombreProducto: product };
+    }
+
+    // Comentario: Generar mensaje completo con toda la información del producto
+    let message = `🛍️ *Consulta de Producto*\n\n`;
+    message += `📦 *Producto:* ${product.NombreProducto}\n`;
+
+    // Agregar precio
+    if (product.PrecioOferta && product.PrecioOferta > 0) {
+        message += `💰 *Precio:* ~$${parseInt(product.PrecioNormal).toLocaleString()}~ ➜ *$${parseInt(product.PrecioOferta).toLocaleString()}*\n`;
+        const descuento = Math.round(((product.PrecioNormal - product.PrecioOferta) / product.PrecioNormal) * 100);
+        message += `🏷️ *Descuento:* ${descuento}% OFF\n`;
+    } else if (product.PrecioNormal) {
+        message += `💰 *Precio:* $${parseInt(product.PrecioNormal).toLocaleString()}\n`;
+    }
+
+    // Agregar categoría
+    if (product.Categoria) {
+        message += `📂 *Categoría:* ${product.Categoria}\n`;
+    }
+
+    // Agregar descripción si existe
+    if (product.Descripcion && product.Descripcion.trim() !== '') {
+        message += `\n📝 *Descripción:*\n${product.Descripcion}\n`;
+    }
+
+    // Agregar link de imagen si existe
+    if (product.ImagenURL && product.ImagenURL.trim() !== '') {
+        message += `\n🖼️ *Imagen:* ${product.ImagenURL}\n`;
+    }
+
+    message += `\n❓ *Consulta:*\n¿Está disponible este producto? ¿Cuál sería la forma de entrega y pago?`;
+
+    const whatsappURL = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
     window.open(whatsappURL, '_blank');
 
     trackEvent('whatsapp_product_inquiry', {
-        product_name: productName,
+        product_name: product.NombreProducto,
+        product_id: product.ID || 'unknown',
+        whatsapp_number: whatsappIndex,
+        has_discount: product.PrecioOferta > 0
+    });
+}
+
+/**
+ * Comentario: Función para contacto general (cuando no hay producto específico)
+ */
+function openWhatsAppGeneral(whatsappIndex) {
+    const phoneNumber = WHATSAPP_NUMBERS[whatsappIndex - 1];
+    const message = `Hola, quisiera información sobre los productos de ${STORE_CONFIG.STORE_NAME}. ¿Qué productos tienen disponibles?`;
+    const whatsappURL = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+    window.open(whatsappURL, '_blank');
+
+    trackEvent('whatsapp_general_inquiry', {
         whatsapp_number: whatsappIndex
+    });
+}
+
+/**
+ * Comentario: Inicializar enlaces del footer al cargar la página
+ */
+function initializeFooterWhatsAppLinks() {
+    const footerWhatsappLinks = document.querySelectorAll('.contact-link.whatsapp-link');
+    footerWhatsappLinks.forEach((link, index) => {
+        link.onclick = (e) => {
+            e.preventDefault();
+            // Por defecto, contacto general
+            openWhatsAppGeneral(index + 1);
+        };
     });
 }
 
@@ -1715,3 +1789,10 @@ window.increaseCartItemQuantity = increaseCartItemQuantity;
 window.decreaseCartItemQuantity = decreaseCartItemQuantity;
 window.removeCartItem = removeCartItem;
 window.openWhatsAppWithProduct = openWhatsAppWithProduct;
+window.openWhatsAppGeneral = openWhatsAppGeneral;
+
+// === INICIALIZACIÓN AL CARGAR LA PÁGINA ===
+document.addEventListener('DOMContentLoaded', function() {
+    // Comentario: Inicializar enlaces del footer con contacto general
+    initializeFooterWhatsAppLinks();
+});
