@@ -52,8 +52,15 @@
     <link rel="apple-touch-icon" sizes="180x180" href="https://i.ibb.co/bgFd8Hgm/LOGO.png">
     <link rel="shortcut icon" href="https://i.ibb.co/bgFd8Hgm/LOGO.png">
 
+    <!-- Preload recursos críticos para velocidad -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="preload" href="catalogo-styles.css" as="style">
+    <link rel="preload" href="script.js" as="script">
+    <link rel="preload" href="https://docs.google.com/spreadsheets" as="fetch" crossorigin>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://docs.google.com">
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="catalogo-styles.css">
@@ -435,6 +442,12 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
+
+    <!-- Vercel Web Analytics -->
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>

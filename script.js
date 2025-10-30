@@ -41,35 +41,45 @@ class ProductManager {
     }
 
     /**
-     * Comentario: Cargar productos desde Google Sheets
+     * Comentario: Cargar productos desde Google Sheets con caché inteligente
      */
     async loadProducts() {
         this.isLoading = true;
         this.showLoadingState();
 
         try {
-            // Comentario: Intentar cargar desde Google Sheets
-            if (STORE_CONFIG.GOOGLE_SHEET_URL && STORE_CONFIG.GOOGLE_SHEET_URL !== 'URL_PUBLICA_DE_LA_HOJA_CSV_AQUI') {
-                console.log('Cargando productos desde Google Sheets:', STORE_CONFIG.GOOGLE_SHEET_URL);
-
-                const response = await fetch(STORE_CONFIG.GOOGLE_SHEET_URL);
-
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
-                }
-
-                const csvText = await response.text();
-                console.log('CSV recibido, primeras 200 caracteres:', csvText.substring(0, 200));
-
-                this.products = this.parseCSV(csvText);
-                console.log('Productos parseados:', this.products.length);
-
-                if (this.products.length === 0) {
-                    throw new Error('No se encontraron productos en Google Sheets');
-                }
+            // Comentario: Verificar si hay productos en caché válidos
+            const cachedData = this.getCachedProducts();
+            if (cachedData && cachedData.products.length > 0) {
+                console.log('✅ Productos cargados desde caché local (rápido)');
+                this.products = cachedData.products;
             } else {
-                // Comentario: Sin URL configurada, mostrar mensaje de error
-                throw new Error('Google Sheets URL no configurada. Configure GOOGLE_SHEET_URL en STORE_CONFIG.');
+                // Comentario: Cargar desde Google Sheets si no hay caché válido
+                if (STORE_CONFIG.GOOGLE_SHEET_URL && STORE_CONFIG.GOOGLE_SHEET_URL !== 'URL_PUBLICA_DE_LA_HOJA_CSV_AQUI') {
+                    console.log('📥 Cargando productos desde Google Sheets...');
+
+                    const response = await fetch(STORE_CONFIG.GOOGLE_SHEET_URL);
+
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+                    }
+
+                    const csvText = await response.text();
+                    console.log('CSV recibido, primeras 200 caracteres:', csvText.substring(0, 200));
+
+                    this.products = this.parseCSV(csvText);
+                    console.log('Productos parseados:', this.products.length);
+
+                    if (this.products.length === 0) {
+                        throw new Error('No se encontraron productos en Google Sheets');
+                    }
+
+                    // Comentario: Guardar en caché para próximas visitas
+                    this.cacheProducts(this.products);
+                } else {
+                    // Comentario: Sin URL configurada, mostrar mensaje de error
+                    throw new Error('Google Sheets URL no configurada. Configure GOOGLE_SHEET_URL en STORE_CONFIG.');
+                }
             }
 
             // Comentario: Filtrar solo productos visibles
@@ -100,6 +110,50 @@ class ProductManager {
             this.renderProducts();
         } finally {
             this.isLoading = false;
+        }
+    }
+
+    /**
+     * Comentario: Obtener productos desde caché localStorage
+     * El caché dura 5 minutos para mantener datos frescos
+     */
+    getCachedProducts() {
+        try {
+            const cached = localStorage.getItem('telovendo_products_cache');
+            if (!cached) return null;
+
+            const data = JSON.parse(cached);
+            const cacheAge = Date.now() - data.timestamp;
+            const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos en milisegundos
+
+            // Comentario: Verificar si el caché está vencido
+            if (cacheAge > CACHE_DURATION) {
+                console.log('⏰ Caché expirado, cargando datos frescos...');
+                localStorage.removeItem('telovendo_products_cache');
+                return null;
+            }
+
+            console.log(`⚡ Caché válido (${Math.round(cacheAge / 1000)}s de antigüedad)`);
+            return data;
+        } catch (error) {
+            console.error('Error leyendo caché:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Comentario: Guardar productos en caché localStorage
+     */
+    cacheProducts(products) {
+        try {
+            const data = {
+                products: products,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('telovendo_products_cache', JSON.stringify(data));
+            console.log('💾 Productos guardados en caché');
+        } catch (error) {
+            console.error('Error guardando caché:', error);
         }
     }
 
