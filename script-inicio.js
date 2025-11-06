@@ -2,7 +2,7 @@
 const STORE_CONFIG = {
     name: 'TE LO VENDO RIOHACHA',
     whatsappNumber: '573007148250', // Número principal de WhatsApp
-    googleMapsUrl: 'https://maps.app.goo.gl/iDLS8qAVYFDYNmWw6', // URL real de Google Maps
+    googleMapsUrl: 'https://www.google.com/maps/place/Telovendo+riohacha/@11.5448105,-72.9111511,17z/data=!3m1!4b1!4m6!3m5!1s0x8e8b63cdd0c59653:0xafeb2019ba45b206!8m2!3d11.5448053!4d-72.9085762!16s%2Fg%2F11ylxy6qqd', // URL del perfil de Google Maps Business
     // Horario: Lunes a Sábado de 9am a 8pm, Domingo 9am a 1pm
     businessHours: {
         monday: { open: 9, close: 20 },
