@@ -5,6 +5,9 @@ package-lock.json
 # Archivos originales (no ofuscados) - MANTENER PRIVADOS
 src-original/
 
+# Registros de cambios - SOLO LOCALES
+REGISTRO-CAMBIOS-*.md
+
 # Archivos temporales
 *.tmp
 *.log
