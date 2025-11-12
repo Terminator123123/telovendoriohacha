@@ -4,15 +4,9 @@
   "description": "TE LO VENDO RIOHACHA - E-commerce Platform",
   "main": "index.html",
   "scripts": {
-    "obfuscate": "node obfuscate.js",
-    "restore": "cp src-original/*.js .",
-    "build": "npm run obfuscate",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["ecommerce", "riohacha", "tienda-online"],
   "author": "Shalem Rolón <shalemr83@gmail.com>",
-  "license": "PROPRIETARY",
-  "devDependencies": {
-    "javascript-obfuscator": "^4.1.1"
-  }
+  "license": "PROPRIETARY"
 }
