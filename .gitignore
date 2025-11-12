@@ -1,0 +1,22 @@
+# Dependencias de Node
+node_modules/
+package-lock.json
+
+# Archivos originales (no ofuscados) - MANTENER PRIVADOS
+src-original/
+
+# Archivos temporales
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# Scripts de desarrollo
+obfuscate.js
+
+# Archivos de configuración local
+.env
+.env.local
+
+# Archivos ZIP temporales
+*.zip
