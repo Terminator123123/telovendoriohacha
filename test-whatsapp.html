@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WhatsApp - TE LO VENDO RIOHACHA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+        }
+
+        .test-section h2 {
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .whatsapp-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #25D366;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        .whatsapp-btn:hover {
+            background: #128C7E;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
+
+        .whatsapp-btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        .btn-text {
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        .btn-number {
+            font-family: monospace;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .info-box {
+            background: #f0f7ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .info-box p {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-ok {
+            background: #25D366;
+            box-shadow: 0 0 10px rgba(37, 211, 102, 0.5);
+        }
+
+        .status-warning {
+            background: #FFA500;
+            box-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+
+        .check-list {
+            background: #fff8e1;
+            border-left: 4px solid #FFA500;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .check-list h3 {
+            color: #F57C00;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .check-list ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .check-list li {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 8px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .check-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #25D366;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .whatsapp-btn {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .btn-number {
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test de WhatsApp</h1>
+        <p class="subtitle">Prueba de funcionamiento de números de WhatsApp</p>
+
+        <div class="info-box">
+            <h3><span class="status-indicator status-ok"></span>¿Cómo usar este test?</h3>
+            <p>Haz clic en cada botón de WhatsApp. Si el número tiene WhatsApp activo, debería abrir la conversación. Si no funciona, verifica la lista de verificación abajo.</p>
+        </div>
+
+        <!-- Test de números individuales -->
+        <div class="test-section">
+            <h2>📱 Números Configurados</h2>
+
+            <a href="https://wa.me/573007148250?text=Hola,%20es%20una%20prueba%20desde%20la%20p%C3%A1gina%20web"
+               class="whatsapp-btn"
+               target="_blank">
+                <span class="btn-icon">📞</span>
+                <span class="btn-text">
+                    <strong>WhatsApp 1 - Línea Principal</strong><br>
+                    <span class="btn-number">+57 300 714 8250</span>
+                </span>
+            </a>
+
+            <a href="https://wa.me/573223639419?text=Hola,%20es%20una%20prueba%20desde%20la%20p%C3%A1gina%20web"
+               class="whatsapp-btn"
+               target="_blank">
+                <span class="btn-icon">📞</span>
+                <span class="btn-text">
+                    <strong>WhatsApp 2 - Línea de Atención</strong><br>
+                    <span class="btn-number">+57 322 363 9419</span>
+                </span>
+            </a>
+
+            <a href="https://wa.me/573022801068?text=Hola,%20es%20una%20prueba%20desde%20la%20p%C3%A1gina%20web"
+               class="whatsapp-btn"
+               target="_blank">
+                <span class="btn-icon">📞</span>
+                <span class="btn-text">
+                    <strong>WhatsApp 3 - Línea de Atención</strong><br>
+                    <span class="btn-number">+57 302 280 1068</span>
+                </span>
+            </a>
+        </div>
+
+        <!-- Test con formato alternativo -->
+        <div class="test-section">
+            <h2>🔧 Formato Alternativo (con código de país explícito)</h2>
+
+            <a href="https://api.whatsapp.com/send?phone=573007148250&text=Prueba"
+               class="whatsapp-btn"
+               target="_blank">
+                <span class="btn-icon">📞</span>
+                <span class="btn-text">
+                    <strong>API WhatsApp - Línea 1</strong><br>
+                    <span class="btn-number">api.whatsapp.com/send</span>
+                </span>
+            </a>
+        </div>
+
+        <!-- Checklist de verificación -->
+        <div class="check-list">
+            <h3><span class="status-indicator status-warning"></span>Si WhatsApp NO funciona, verifica:</h3>
+            <ul>
+                <li>El número tiene WhatsApp instalado y activo</li>
+                <li>El número es de Colombia (código +57)</li>
+                <li>No hay espacios ni guiones en el número</li>
+                <li>WhatsApp está instalado en tu dispositivo</li>
+                <li>Tienes conexión a internet</li>
+                <li>Si es WhatsApp Business, está correctamente configurado</li>
+            </ul>
+        </div>
+
+        <!-- Información técnica -->
+        <div class="test-section">
+            <h2>🔍 Información Técnica</h2>
+            <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px;">
+                <p><strong>Formato usado:</strong> https://wa.me/[número]</p>
+                <p><strong>Números configurados:</strong></p>
+                <p>• 573007148250 (Principal)</p>
+                <p>• 573223639419 (Línea 2)</p>
+                <p>• 573022801068 (Línea 3)</p>
+                <p style="margin-top: 10px;"><strong>Formato:</strong> [código país][número sin espacios]</p>
+                <p><strong>Ejemplo:</strong> 57 + 300 714 8250 = 573007148250</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Agregar eventos de tracking para debug
+        document.querySelectorAll('.whatsapp-btn').forEach((btn, index) => {
+            btn.addEventListener('click', function(e) {
+                console.log(`WhatsApp button ${index + 1} clicked`);
+                console.log('URL:', this.href);
+
+                // Verificar si se abre correctamente
+                setTimeout(() => {
+                    console.log('WhatsApp should have opened in new tab');
+                }, 1000);
+            });
+        });
+
+        // Detectar si estamos en móvil o desktop
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        console.log('Dispositivo:', isMobile ? 'Móvil' : 'Desktop');
+        console.log('User Agent:', navigator.userAgent);
+    </script>
+</body>
+</html>
