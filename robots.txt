@@ -1,5 +1,5 @@
 # robots.txt para TE LO VENDO RIOHACHA
-# Última actualización: 2025-10-21
+# Última actualización: 2025-11-23
 
 User-agent: *
 Allow: /
